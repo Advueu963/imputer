@@ -10,7 +10,7 @@ Auch solltet ihr möglichst Modular implementieren, sodass zu einem späteren Ze
 
 Das Packagemanagement wir über [uv](https://docs.astral.sh/uv/getting-started/installation/), welches eines der schnellsten package manager für Python ist.
 
-Nach der Installation könnt ihr basierend auf der **pyproject.toml**, die benötigten Packages installieren, mithilfe von `uv sync`.
+Nach der Installation könnt ihr basierend auf der **pyproject.toml**, die benötigten Packages installieren, mithilfe von `uv sync --dev`.
 
 Einige benötigte Packages haben wir schonmal hinzugefügt, weitere die nötig sind können über `uv add <package>` hinzugefügt werden, siehe [hier](https://docs.astral.sh/uv/getting-started/features/#projects).
 
