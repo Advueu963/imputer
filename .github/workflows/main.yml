@@ -77,4 +77,4 @@ jobs:
             -   name: Install test dependencies
                 run: uv sync --no-dev --group test --group ${{ matrix.dependency-group }}
             -   name: Run unit tests
-                run: uv run --no-sync pytest "tests/" -m "This and that"
+                run: uv run --no-sync pytest "tests/"
