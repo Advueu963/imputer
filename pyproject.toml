@@ -1,0 +1,22 @@
+[project]
+name = "imputer"
+version = "0.1.0"
+description = "Big things are happening here."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.3.4",
+    "pandas>=2.3.3",
+    "pre-commit>=4.4.0",
+    "pytest>=9.0.0",
+    "scikit-learn>=1.7.2",
+    "torch>=2.9.0",
+]
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["imputer*"]
