@@ -1,17 +1,22 @@
 # Imputer Package
 
-Ziel des Hachathon ist es ein Pyhton package zu implementieren, womit wir die Spieltheoretischen Konzepte wie Shapley Values und Shapley Interactions auf Machine Learning modelle anwenden können.
+The goal of the hackathon is to implement a Python package that allows us to apply game-theoretic concepts such as Shapley Values and Shapley Interactions to machine learning models.
 
-Hierbei solltet ihr die auf dem Repository genannten Issues weitmöglichst implementieren und dabei auf ausreichende Tests und Dokumentation achten.
+You should implement the issues listed in the repository as thoroughly as possible, ensuring sufficient tests and documentation.
 
-Auch solltet ihr möglichst Modular implementieren, sodass zu einem späteren Zeitpunkt das Package erweitert werden kann.
+You should also implement as modularly as possible so that the package can be extended at a later time.
 
-## Nächste Schritte
+As references, you can use [Explaining by Removing: A Unified Framework for Model Explanation](https://jmlr.csail.mit.edu/papers/volume22/20-1316/20-1316.pdf) (Section 4.2) and [Explaining Machine Learning Models with Conditional Shapley Values in R and Python](https://arxiv.org/pdf/2504.01842) (Section 2.2).
 
-Das Packagemanagement wir über [uv](https://docs.astral.sh/uv/getting-started/installation/), welches eines der schnellsten package manager für Python ist.
+## Next Steps
 
-Nach der Installation könnt ihr basierend auf der **pyproject.toml**, die benötigten Packages installieren, mithilfe von `uv sync --dev`.
+Package management is handled via [uv](https://docs.astral.sh/uv/getting-started/installation/), which is one of the fastest package managers for Python.
 
-Einige benötigte Packages haben wir schonmal hinzugefügt, weitere die nötig sind können über `uv add <package>` hinzugefügt werden, siehe [hier](https://docs.astral.sh/uv/getting-started/features/#projects).
+After installation, you can install the required packages based on **pyproject.toml** using `uv sync --dev`.
 
-Schlussendlich könnt ihr euch an die Implementierung setzen, Issues dafür sind [hier](https://github.com/Advueu963/imputer) definiert.
+We have already added some required packages; additional necessary packages can be added using `uv add <package>`, see [here](https://docs.astral.sh/uv/getting-started/features/#projects).
+We aim for high modularity even in the package management, thus we have different groups for the dependencies.
+Those which are core dependencies, needed in every case, are added via `uv add <package>`.
+Others which would only be needed in certainty cases, e.g. see the torch dependency group in **pyproject.toml**, are added via `uv add <package> --group <dependency_group_name>`.
+
+Finally, you can start the implementation; issues for this are defined [here](https://github.com/Advueu963/imputer).
