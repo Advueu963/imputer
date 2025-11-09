@@ -5,13 +5,8 @@ description = "Big things are happening here."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "jupyter>=1.1.1",
     "numpy>=2.3.4",
-    "pandas>=2.3.3",
-    "pre-commit>=4.4.0",
-    "pytest>=9.0.0",
-    "scikit-learn>=1.7.2",
-    "torch>=2.9.0",
+    "scipy",
 ]
 
 [build-system]
@@ -22,10 +17,48 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 include = ["imputer*","lazy_dispatch*"]
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pyright]
+include = ["src/imputer"]
+exclude = ["tests","notebooks", "src/lazy_dispatch"]
+venv = ".venv"
+pythonVersion = "3.12"
+defineConstant = { DEBUG = true }
+reportMissingImports = "error"
+reportMissingTypeStubs = false
+pythonPlatform = "Linux"
 
 [dependency-groups]
+torch = [
+    "torch>=2.0.0",
+    "torchvision",
+]
+jax = [
+    "jax>=0.8.0",
+    "flax>=0.12.0",
+]
+jax-cuda12 = [
+    "jax[cuda12]",
+]
+all_ml = [
+    {include-group = "torch"},
+    {include-group = "jax"},
+]
+test = [
+    "pytest>=8.3.5",       # for testing
+    "pytest-cov>=6.0.0",   # for coverage
+    "pytest-xdist>=3.6.1", # for parallel testing
+    "packaging",           # for version parsing
+]
 lint = [
     "ruff>=0.14.1",       # for linting
     "pre-commit>=4.3.0",  # for running the linters pre-commit hooks
-    "pyright>=1.1.402",   # for type checking
+    "pyright"
+]
+dev = [
+    {include-group = "all_ml"},
+    {include-group = "test"},
+    {include-group = "lint"},
 ]
