@@ -20,3 +20,12 @@ Those which are core dependencies, needed in every case, are added via `uv add <
 Others which would only be needed in certainty cases, e.g. see the torch dependency group in **pyproject.toml**, are added via `uv add <package> --group <dependency_group_name>`.
 
 Finally, you can start the implementation; issues for this are defined [here](https://github.com/Advueu963/imputer).
+
+## References
+Packages (XAI pacakges) that use imputation/masking.
+
+- shap.maskers: https://github.com/shap/shap
+- shapiq.imputer: https://github.com/mmschlk/shapiq
+- fippy.samplers: https://github.com/gcskoenig/fippy
+- sklearn.impute: https://scikit-learn.org/stable/api/sklearn.impute.html
+- shapr: https://github.com/NorskRegnesentral/shapr
