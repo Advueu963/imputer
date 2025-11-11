@@ -87,12 +87,30 @@ def impute_median_jax(point: "jax.Array", reference: "jax.Array", colations: "ja
 
 
 # Implementations for polars DataFrame
-@impute_static.register("polars.DataFrame")
-def impute_static_polars(point: "polars.DataFrame", reference: "polars.DataFrame", colations: "polars.DataFrame") -> "polars.DataFrame":
+@impute_static.register("polars.dataframe.frame.DataFrame")
+def impute_static_polars(point: "polars.dataframe.frame.DataFrame", reference: "polars.dataframe.frame.DataFrame", colations: "polars.dataframe.frame.DataFrame") -> "polars.dataframe.frame.DataFrame":
     imputed = point.clone()
     for column in point.columns:
         if colations[0, column]:
             imputed[0, column] = reference[0, column]
+    return imputed
+
+@impute_mean.register("polars.dataframe.frame.DataFrame")
+def impute_mean_polars(point: "polars.dataframe.frame.DataFrame", reference: "polars.dataframe.frame.DataFrame", colations: "polars.dataframe.frame.DataFrame") -> "polars.dataframe.frame.DataFrame":
+    imputed = point.clone()
+    mean = reference.mean_horizontal()[0]
+    for column in point.columns:
+        if colations[0, column]:
+            imputed[0, column] = mean
+    return imputed
+
+@impute_median.register("polars.dataframe.frame.DataFrame")
+def impute_median_polars(point: "polars.dataframe.frame.DataFrame", reference: "polars.dataframe.frame.DataFrame", colations: "polars.dataframe.frame.DataFrame") -> "polars.dataframe.frame.DataFrame":
+    imputed = point.clone()
+    median = np.median(reference.rows())
+    for column in point.columns:
+        if colations[0, column]:
+            imputed[0, column] = median
     return imputed
 
 if __name__ == "__main__":
@@ -153,3 +171,10 @@ if __name__ == "__main__":
 
     # Test Median
     print(impute(point_jax, reference_matrix_jax, colations_jax, mode=ImputeMode.MEDIAN))
+
+    import polars as pl
+    point_pl = pl.DataFrame(np.array([[4,5,6,7]]))
+    reference_pl = pl.DataFrame(np.array([[9,8,7,6]]))
+    colations_pl = pl.DataFrame(np.array([[0,1,0,1]]))
+    print(type(point_pl))
+    print(impute(point_pl, reference_pl, colations_pl, mode=ImputeMode.STATIC))
