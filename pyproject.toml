@@ -7,6 +7,12 @@ requires-python = ">=3.12"
 dependencies = [
     "numpy>=2.3.4",
     "scipy",
+    "jax",
+    "jaxlib", 
+    "jax-resnet",
+    "torch",
+    "torchvision",
+    "pillow",
 ]
 
 [build-system]
