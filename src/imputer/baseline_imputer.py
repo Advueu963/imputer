@@ -85,6 +85,16 @@ def impute_median_jax(point: "jax.Array", reference: "jax.Array", colations: "ja
             imputed = imputed.at[i].set(median_value[i])
     return imputed
 
+
+# Implementations for polars DataFrame
+@impute_static.register("polars.DataFrame")
+def impute_static_polars(point: "polars.DataFrame", reference: "polars.DataFrame", colations: "polars.DataFrame") -> "polars.DataFrame":
+    imputed = point.clone()
+    for column in point.columns:
+        if colations[0, column]:
+            imputed[0, column] = reference[0, column]
+    return imputed
+
 if __name__ == "__main__":
     # Test data
     point = np.array([4.0, 5.0, 6.0, 7.0])
