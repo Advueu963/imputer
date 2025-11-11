@@ -26,7 +26,7 @@ def impute_static_np(point: np.ndarray, reference: np.ndarray, colations: np.nda
     return imputed
 
 @impute_static.register("jax.Array")
-def impute_static_flax(point: "jax.Array", reference: "jax.Array", colations: "jax.Array") -> "jax.Array":
+def impute_static_jax(point: "jax.Array", reference: "jax.Array", colations: "jax.Array") -> "jax.Array":
     imputed = point.copy()
     for i in range(point.shape[0]):
         if colations[i]:
@@ -44,8 +44,8 @@ if __name__ == "__main__":
     print(impute(point, reference, colations, mode=ImputeMode.STATIC))
 
     import jax.numpy as jnp
-    point_flax = jnp.array([4, 5, 6, 7])
-    reference_flax = jnp.array([9, 8, 7, 6])
-    colations_flax = jnp.array([0, 1, 0, 1])
-    print(colations_flax.size)
-    print(impute(point_flax, reference_flax, colations_flax, mode=ImputeMode.STATIC))
+    point_jax = jnp.array([4, 5, 6, 7])
+    reference_jax = jnp.array([9, 8, 7, 6])
+    colations_jax = jnp.array([0, 1, 0, 1])
+    print(colations_jax.size)
+    print(impute(point_jax, reference_jax, colations_jax, mode=ImputeMode.STATIC))
