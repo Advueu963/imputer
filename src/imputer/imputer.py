@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Generator, Optional, Union
-
-import lazy_dispatch as ld
+import re
 
 class Imputer(ABC):
     def __init__(self, model=None, feature_group:  Optional[Union[dict[int, str], str]] = None) -> None:
@@ -9,14 +8,59 @@ class Imputer(ABC):
         self.feature_group = feature_group
 
     def expand_coalitions(self, coalitions):
+        expanded_coalitions = coalitions.copy()
         if self.feature_group is None:
             return coalitions
         
         if isinstance(self.feature_group, str):
             raise NotImplementedError("String-based feature groups are not implemented yet.")
         else:
-            raise NotImplementedError("Dict-based feature groups are not implemented yet.")
-            
+            for k, v in self.feature_group.items():
+                index = k
+                if isinstance(index, int):
+                    index = [index]
+                coalition_values = [coalitions[idx] for idx in index]
+                parts = re.split(r'[,;:]', v)
+                parts = [part.strip() for part in parts if part.strip()]
+                if parts[-1] != ',':
+                    parts.append([","])
+                current_index = []
+                for i, part in enumerate(parts):
+                    if part in [',', ';', ':']:
+                        continue
+                    parts[i] = int(part)
+                for i, part in enumerate(parts):
+                    if part != ':':
+                        continue
+                    prev_part = parts.pop(i - 1) if i > 0 else None
+                    next_part = parts.pop(i + 1) if i + 1 < len(parts) else None
+                    if prev_part is None or next_part is None or not (isinstance(prev_part, int) and isinstance(next_part, int)):
+                        raise ValueError("Invalid feature group format around ':'.")
+                    combined = [x for x in range(prev_part, next_part + 1)]
+                    parts[i] = combined
+
+                for i, part in enumerate(parts):
+                    if part != ';':
+                        continue
+                    prev_part = parts.pop(i - 1) if i > 0 else None
+                    next_part = parts.pop(i + 1) if i + 1 < len(parts) else None
+                    if prev_part is None or next_part is None:
+                        raise ValueError("Invalid feature group format around ';'.")
+                    combined = []
+                    for prev in prev_part:
+                        if isinstance(prev, int):
+                            prev = [prev]
+                        for nex in next_part:
+                            if isinstance(nex, int):
+                                nex = [nex]
+                            combined.append(prev.append(nex)) # type: ignore
+                    parts[i] = combined
+                for i, part in enumerate(parts):
+                    if part == ',':
+                        continue
+                    for idx in part:
+                        expanded_coalitions.insert(idx, coalition_values)
+                    
         return coalitions
 
     def __call__(self, data, coalitions):
@@ -35,26 +79,10 @@ class Imputer(ABC):
 
     def predict(self, imputed_data):
         if self.model:
-            outputs_pred = self.predict_model(self.model, imputed_data)# TODO: adapt to model interface
+            outputs_pred = self.model.predict(imputed_data) # TODO: adapt to model interface
             return outputs_pred
         else:
             raise ValueError("Model must be provided for prediction")
 
     def postprocess(self, predictions):
         return predictions #TODO: placeholder for postprocessing
-    
-    @ld.lazydispatch
-    def predict_model(model: object, data: object):
-        return None
-
-    @predict_model.register("sklearn.base.BaseEstimator")
-    def predict_sklearn_model(model: "sklearn.base.BaseEstimator", data: object):
-        return model.predict(data)
-    
-    @predict_model.register("torch.nn.Module")
-    def predict_torch_model(model: "torch.nn.Module", data: object):
-        return model(data)
-    
-    @predict_model.register("flax.nnx.Module")
-    def predict_flax_model(model: "flax.nnx.Module", data: object):
-        return model(data)
