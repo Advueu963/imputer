@@ -1,19 +1,41 @@
 from abc import ABC, abstractmethod
 from typing import Generator, Optional, Union
+import numpy as np
 import re
 
 class Imputer(ABC):
-    def __init__(self, model=None, feature_group:  Optional[Union[dict[int, str], str]] = None) -> None:
+    def __init__(self, model=None, feature_group: Optional[Union[dict[int, str], str]] = None) -> None:
         self.model = model
-        self.feature_group = feature_group
 
-    def expand_coalitions(self, coalitions):
-        expanded_coalitions = coalitions.copy()
-        if self.feature_group is None:
-            return coalitions
-        
-        if isinstance(self.feature_group, str):
-            raise NotImplementedError("String-based feature groups are not implemented yet.")
+    @ld.lazydispatch
+    def expand_coalitions(data: object, coalitions: object, feature_group: object):
+        return None
+    
+    @expand_coalitions.register(np.ndarray)
+    def expand_coalitions_np(data: np.ndarray, coalitions: np.ndarray, feature_group: Union[dict[int, str], str]) -> np.ndarray:
+        if isinstance(feature_group, str):
+            # Parse grid dimensions from string (e.g., "3x3" or "3x3x3")
+            grid_dims = tuple(map(int, feature_group.lower().split('x')))
+            num_dims = len(grid_dims)
+
+            if len(data.shape) == 2:
+                num_features = data.shape[1]
+                feature_dim_per_axis = int(num_features ** (1.0 / num_dims))
+                feature_dims = tuple([feature_dim_per_axis] * num_dims)
+            else:
+                feature_dims = data.shape[1:1+num_dims]
+                        
+            expand_factors = tuple(feature_dims[i] // grid_dims[i] for i in range(num_dims))
+            
+            expanded_coalitions = []
+            for coalition in coalitions:
+                # Reshape coalition to grid and expand each dimension
+                expanded = coalition.reshape(grid_dims)
+                for axis, factor in enumerate(expand_factors):
+                    expanded = np.repeat(expanded, factor, axis=axis)
+                expanded_coalitions.append(expanded.flatten())
+            
+            return np.array(expanded_coalitions)
         else:
             for k, v in self.feature_group.items():
                 index = k
@@ -74,7 +96,7 @@ class Imputer(ABC):
         return outputs
 
     @abstractmethod
-    def impute(self, data, coalitions) -> Generator:
+    def impute(self, data, coalitions):
         raise NotImplementedError("Subclasses must implement this method")
 
     def predict(self, imputed_data):
@@ -86,3 +108,22 @@ class Imputer(ABC):
 
     def postprocess(self, predictions):
         return predictions #TODO: placeholder for postprocessing
+    
+    @ld.lazydispatch
+    def predict_model(model: object, data: object):
+        return data
+
+    @predict_model.register("sklearn.base.BaseEstimator")
+    def predict_sklearn_model(model: "sklearn.base.BaseEstimator", data: object):
+        return model.predict(data)
+    
+    @predict_model.register("torch.nn.Module")
+    def predict_torch_model(model: "torch.nn.Module", data: object):
+        import torch
+        if not isinstance(data, torch.Tensor):
+            data = torch.Tensor(data)
+        return model(data)
+    
+    @predict_model.register("flax.nnx.Module")
+    def predict_flax_model(model: "flax.nnx.Module", data: object):
+        return model(data)
