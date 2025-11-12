@@ -32,29 +32,58 @@ def impute_median(point : object, reference : object, coalitions : object) -> ob
 # Implementations for numpy arrays
 @impute_static.register(np.ndarray)
 def impute_static_np(point: np.ndarray, reference: np.ndarray, coalitions: np.ndarray) -> np.ndarray:
-    imputed = point.copy()
-    for i in range(point.shape[0]):
-        if coalitions[i]:
-            imputed[i] = reference[i]
-    return imputed
+    if coalitions.ndim == 1:
+        coalitions = coalitions.reshape(1, -1)
+    
+    num_coalitions = coalitions.shape[0]
+    results = np.zeros((num_coalitions, point.shape[0]))
+    
+    for coalition_idx in range(num_coalitions):
+        imputed = point.copy()
+        for i in range(point.shape[0]):
+            if coalitions[coalition_idx, i]:
+                imputed[i] = reference[i]
+        results[coalition_idx] = imputed
+    return results if num_coalitions > 1 else results[0]
+
 
 @impute_mean.register(np.ndarray)
 def impute_mean_np(point: np.ndarray, reference: np.ndarray, coalitions: np.ndarray) -> np.ndarray:
-    imputed = point.copy()
+    if coalitions.ndim == 1:
+        coalitions = coalitions.reshape(1, -1)
+    
+    num_coalitions = coalitions.shape[0]
+    results = np.zeros((num_coalitions, point.shape[0]))
     mean_value = np.mean(reference, axis=1)
-    for i in range(point.shape[0]):
-        if coalitions[i]:
-            imputed[i] = mean_value[i]
-    return imputed
+    
+    for coalition_idx in range(num_coalitions):
+        imputed = point.copy()
+        for i in range(point.shape[0]):
+            if coalitions[coalition_idx, i]:
+                imputed[i] = mean_value[i]
+        results[coalition_idx] = imputed
+    
+    return results if num_coalitions > 1 else results[0]
+
 
 @impute_median.register(np.ndarray)
 def impute_median_np(point: np.ndarray, reference: np.ndarray, coalitions: np.ndarray) -> np.ndarray:
-    imputed = point.copy()
+    if coalitions.ndim == 1:
+        coalitions = coalitions.reshape(1, -1)
+    
+    num_coalitions = coalitions.shape[0]
+    results = np.zeros((num_coalitions, point.shape[0]))
     median_value = np.median(reference, axis=1)
-    for i in range(point.shape[0]):
-        if coalitions[i]:
-            imputed[i] = median_value[i]
-    return imputed
+    
+    for coalition_idx in range(num_coalitions):
+        imputed = point.copy()
+        for i in range(point.shape[0]):
+            if coalitions[coalition_idx, i]:
+                imputed[i] = median_value[i]
+        results[coalition_idx] = imputed
+    
+    return results if num_coalitions > 1 else results[0]
+
 
 # Implementations for jax arrays
 @impute_static.register("jax.Array")
@@ -123,7 +152,7 @@ if __name__ == "__main__":
         [30.0, 9.0, 5.0, 9.0],
         [40.0, 6.0, 5.0, 12.0]
     ])
-    coalitions = np.array([0, 1, 0, 1])
+    coalitions = np.array([[0, 1, 0, 1], [1,0,1,0]])
     
     print("Original point:", point)
     print("Reference:", reference)
