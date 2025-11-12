@@ -16,25 +16,130 @@ class DummyModel:
 
 # Setup
 default_model = DummyModel(name="DefaultModel")
-override_model = DummyModel(name="OverrideModel")
 
-point = np.array([1, 2, 3, 4])
-reference = np.array([10, 20, 30, 40])
+point = np.array([4.0, 5.0, 6.0, 7.0])
+reference = np.array([
+    [10.0, 1.0, 5.0, 3.0],
+    [20.0, 2.0, 5.0, 6.0],
+    [30.0, 9.0, 5.0, 9.0],
+    [40.0, 6.0, 5.0, 12.0]
+])
 coalition_mask = np.array([False, True, False, True])
 
+
+# # Test with NumPy
+# imp = mean_imputer.impute(data=point, coalitions=coalition_mask)
+# print(f"Imputer output: {imp}")
+# result_1 = mean_imputer(data=point, coalitions=coalition_mask)
+# print(f"NumPy result: {result_1}")
+
+# # Test with JAX
+# point_jax = jnp.array([1, 2, 3, 4])
+# coalition_mask_jax = jnp.array([False, True, False, True])
+# result_1b = mean_imputer(data=point_jax, coalitions=coalition_mask_jax)
+# print(f"JAX result: {result_1b}")
+
+# Test data
+data = np.array([4.0, 5.0, 6.0, 7.0])
+reference = np.array([9.0, 8.0, 7.0, 6.0])
+reference_matrix = np.array([
+    [10.0, 1.0, 5.0, 3.0],
+    [20.0, 2.0, 5.0, 6.0],
+    [30.0, 9.0, 5.0, 9.0],
+    [40.0, 6.0, 5.0, 12.0]
+])
+coalitions = np.array([[0, 1, 0, 1], [1,0,1,0]])
+
 # Create imputer
-mean_imputer = BaselineImputer(
+static_imputer = BaselineImputer(
     reference_data=reference,
+    mode=ImputeMode.STATIC,
+    model=default_model
+)
+mean_imputer = BaselineImputer(
+    reference_data=reference_matrix,
+    mode=ImputeMode.MEAN,
+    model=default_model
+)
+median_imputer = BaselineImputer(
+    reference_data=reference_matrix,
+    mode=ImputeMode.MEDIAN,
+    model=default_model
+)
+
+print("Original data:", data)
+print("reference_data:", reference)
+print("coalitions (mask):\n", coalitions)
+
+# Test STATIC mode
+print("STATIC mode:")
+result_static = static_imputer.impute(data, coalitions)
+print(f"Result: {result_static}\n")
+
+# Test MEAN mode with matrix
+print("MEAN mode (with reference_matrix):")
+result_mean = mean_imputer.impute(data, coalitions)
+print(f"Result: {result_mean}\n")
+
+# Test MEDIAN mode with matrix
+print("MEDIAN mode (with reference_matrix):")
+result_median = median_imputer.impute(data, coalitions)
+print(f"Result: {result_median}")
+
+import jax.numpy as jnp
+data_jax = jnp.array([4.0, 5.0, 6.0, 7.0])
+reference_jax = jnp.array([9.0, 8.0, 7.0, 6.0])
+reference_matrix_jax = jnp.array([
+    [10.0, 1.0, 5.0, 3.0],
+    [20.0, 2.0, 5.0, 6.0],
+    [30.0, 9.0, 5.0, 9.0],
+    [40.0, 6.0, 5.0, 12.0]
+])
+coalitions_jax = jnp.array([0, 1, 0, 1])
+print(coalitions_jax.size)
+
+static_imputer_jax = BaselineImputer(
+    reference_data=reference_jax,
+    mode=ImputeMode.STATIC,
+    model=default_model
+)
+
+print(static_imputer_jax.impute(data_jax, coalitions_jax))
+
+# Test Mean
+reference_matrix_jax = jnp.array([
+    [10, 1, 5, 3],
+    [20, 2, 5, 6],
+    [30, 9, 5, 9],
+    [40, 6, 5, 12]
+])
+
+mean_imputer_jax = BaselineImputer(
+    reference_data=reference_matrix_jax,
     mode=ImputeMode.MEAN,
     model=default_model
 )
 
-# Test with NumPy
-result_1 = mean_imputer(data=point, coalitions=coalition_mask)
-print(f"NumPy result: {result_1}")
+print(mean_imputer_jax.impute(data_jax, coalitions_jax))
 
-# Test with JAX
-point_jax = jnp.array([1, 2, 3, 4])
-coalition_mask_jax = jnp.array([False, True, False, True])
-result_1b = mean_imputer(data=point_jax, coalitions=coalition_mask_jax)
-print(f"JAX result: {result_1b}")
+# Test Median
+median_imputer_jax = BaselineImputer(
+    reference_data=reference_matrix_jax,
+    mode=ImputeMode.MEDIAN,
+    model=default_model
+)
+print(median_imputer_jax.impute(data_jax, coalitions_jax))
+
+import polars as pl
+data_pl = pl.DataFrame(np.array([[4,5,6,7]]))
+reference_pl = pl.DataFrame(np.array([[9,8,7,6]]))
+coalitions_pl = pl.DataFrame(np.array([[0,1,0,1]]))
+
+static_imputer_pl = BaselineImputer(
+    reference_data=reference_pl,
+    mode=ImputeMode.STATIC,
+    model=default_model
+)
+
+print(type(data_pl))
+print(static_imputer_pl.impute(data_pl, coalitions_pl))

@@ -15,15 +15,15 @@ class BaselineImputer(Imputer):
         self.mode = mode
         print(mode)
 
-    def impute(self, data: object, coalitions: object, mode=ImputeMode.STATIC) -> object:
-        if mode == ImputeMode.STATIC:
+    def impute(self, data: object, coalitions: object) -> object:
+        if self.mode == ImputeMode.STATIC:
             return self.impute_static(data, self.reference_data, coalitions)
-        elif mode == ImputeMode.MEAN:
+        elif self.mode == ImputeMode.MEAN:
             return self.impute_mean(data, self.reference_data, coalitions)
-        elif mode == ImputeMode.MEDIAN:
+        elif self.mode == ImputeMode.MEDIAN:
             return self.impute_median(data, self.reference_data, coalitions)
         else:
-            raise NotImplementedError(f"Imputation mode {mode} not implemented.")
+            raise NotImplementedError(f"Imputation mode {self.mode} not implemented.")
 
     @ld.lazydispatch
     def impute_static(data: object, reference_data: object, coalitions: object) -> object:
@@ -150,69 +150,3 @@ class BaselineImputer(Imputer):
             if coalitions[0, column]:
                 imputed[0, column] = median
         return imputed
-
-    # if __name__ == "__main__":
-    #     # Test data
-    #     data = np.array([4.0, 5.0, 6.0, 7.0])
-    #     reference = np.array([9.0, 8.0, 7.0, 6.0])
-    #     reference_matrix = np.array([
-    #         [10.0, 1.0, 5.0, 3.0],
-    #         [20.0, 2.0, 5.0, 6.0],
-    #         [30.0, 9.0, 5.0, 9.0],
-    #         [40.0, 6.0, 5.0, 12.0]
-    #     ])
-    #     coalitions = np.array([[0, 1, 0, 1], [1,0,1,0]])
-        
-    #     print("Original data:", data)
-    #     print("reference_data:", reference)
-    #     print("coalitions (mask):", coalitions)
-    #     print()
-        
-    #     # Test STATIC mode
-    #     print("STATIC mode:")
-    #     result_static = impute(data, reference, coalitions, mode=ImputeMode.STATIC)
-    #     print(f"Result: {result_static}")
-    #     print()
-        
-    #     # Test MEAN mode with matrix
-    #     print("MEAN mode (with reference_matrix):")
-    #     result_mean = impute(data, reference_matrix, coalitions, mode=ImputeMode.MEAN)
-    #     print(f"Result: {result_mean}")
-    #     print()
-        
-    #     # Test MEDIAN mode with matrix
-    #     print("MEDIAN mode (with reference_matrix):")
-    #     result_median = impute(data, reference_matrix, coalitions, mode=ImputeMode.MEDIAN)
-    #     print(f"Result: {result_median}")
-
-    #     import jax.numpy as jnp
-    #     data_jax = jnp.array([4.0, 5.0, 6.0, 7.0])
-    #     reference_jax = jnp.array([9.0, 8.0, 7.0, 6.0])
-    #     reference_matrix_jax = jnp.array([
-    #         [10.0, 1.0, 5.0, 3.0],
-    #         [20.0, 2.0, 5.0, 6.0],
-    #         [30.0, 9.0, 5.0, 9.0],
-    #         [40.0, 6.0, 5.0, 12.0]
-    #     ])
-    #     coalitions_jax = jnp.array([0, 1, 0, 1])
-    #     print(coalitions_jax.size)
-    #     print(impute(data_jax, reference_jax, coalitions_jax, mode=ImputeMode.STATIC))
-
-    #     # Test Mean
-    #     reference_matrix_jax = jnp.array([
-    #         [10, 1, 5, 3],
-    #         [20, 2, 5, 6],
-    #         [30, 9, 5, 9],
-    #         [40, 6, 5, 12]
-    #     ])
-    #     print(impute(data_jax, reference_matrix_jax, coalitions_jax, mode=ImputeMode.MEAN))
-
-    #     # Test Median
-    #     print(impute(data_jax, reference_matrix_jax, coalitions_jax, mode=ImputeMode.MEDIAN))
-
-    #     import polars as pl
-    #     data_pl = pl.DataFrame(np.array([[4,5,6,7]]))
-    #     reference_pl = pl.DataFrame(np.array([[9,8,7,6]]))
-    #     coalitions_pl = pl.DataFrame(np.array([[0,1,0,1]]))
-    #     print(type(data_pl))
-    #     print(impute(data_pl, reference_pl, coalitions_pl, mode=ImputeMode.STATIC))
