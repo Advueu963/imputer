@@ -1,26 +1,28 @@
 from abc import ABC, abstractmethod
 from typing import Generator, Optional, Union
-
+import numpy as np
 import lazy_dispatch as ld
 
 class Imputer(ABC):
-    def __init__(self, model=None, feature_group:  Optional[Union[dict[int, str], str]] = None) -> None:
+    def __init__(self, model=None, feature_group: Optional[Union[dict[int, str], str]] = None) -> None:
         self.model = model
-        self.feature_group = feature_group
 
-    def expand_coalitions(self, coalitions):
-        if self.feature_group is None:
-            return coalitions
-        
-        if isinstance(self.feature_group, str):
+    @ld.lazydispatch
+    def expand_coalitions(coalitions: object, feature_group: object):
+        return None
+    
+    @expand_coalitions.register(np.ndarray)
+    def expand_coalitions_np(coalitions: np.ndarray, feature_group: Union[dict[int, str], str]) -> np.ndarray:
+        if isinstance(feature_group, str):
             raise NotImplementedError("String-based feature groups are not implemented yet.")
         else:
             raise NotImplementedError("Dict-based feature groups are not implemented yet.")
-            
-        return coalitions
 
-    def __call__(self, data, coalitions):
-        coalitions_processed = self.expand_coalitions(coalitions)
+    def __call__(self, data, coalitions, feature_group: Optional[Union[dict[int, str], str]] = None):
+        if feature_group:
+            coalitions_processed = self.expand_coalitions(coalitions, feature_group=feature_group)
+        else:
+            coalitions_processed = coalitions
         imputation_generator = self.impute(data, coalitions_processed)
         outputs = []
         for i, imputed_data in enumerate(imputation_generator):
@@ -45,7 +47,7 @@ class Imputer(ABC):
     
     @ld.lazydispatch
     def predict_model(model: object, data: object):
-        return None
+        return data
 
     @predict_model.register("sklearn.base.BaseEstimator")
     def predict_sklearn_model(model: "sklearn.base.BaseEstimator", data: object):

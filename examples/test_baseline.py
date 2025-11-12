@@ -74,7 +74,6 @@ reference_matrix_jax = jnp.array([
     [40.0, 6.0, 5.0, 12.0]
 ])
 coalitions_jax = jnp.array([0, 1, 0, 1])
-print(coalitions_jax.size)
 
 static_imputer_jax = BaselineImputer(
     reference_data=reference_jax,
@@ -82,7 +81,8 @@ static_imputer_jax = BaselineImputer(
     model=default_model
 )
 
-print(static_imputer_jax(data_jax, coalitions_jax))
+result_static_imputer_jax = static_imputer_jax(data_jax, coalitions_jax)
+print(f"STATIC mode (JAX): {result_static_imputer_jax}")
 
 # Test Mean
 reference_matrix_jax = jnp.array([
@@ -98,7 +98,8 @@ mean_imputer_jax = BaselineImputer(
     model=default_model
 )
 
-print(mean_imputer_jax(data_jax, coalitions_jax))
+result_mean_imputer_jax = mean_imputer_jax(data_jax, coalitions_jax)
+print(f"MEAN mode (JAX): {result_mean_imputer_jax}")
 
 # Test Median
 median_imputer_jax = BaselineImputer(
@@ -106,7 +107,9 @@ median_imputer_jax = BaselineImputer(
     mode=ImputeMode.MEDIAN,
     model=default_model
 )
-print(median_imputer_jax(data_jax, coalitions_jax))
+
+result_median_imputer_jax = median_imputer_jax(data_jax, coalitions_jax)
+print(f"MEDIAN mode (JAX): {result_median_imputer_jax}")
 
 import polars as pl
 data_pl = [pl.DataFrame(np.array([[4,5,6,7]]))]
@@ -119,5 +122,5 @@ static_imputer_pl = BaselineImputer(
     model=default_model
 )
 
-print(type(data_pl))
-print(static_imputer_pl(data_pl, coalitions_pl))
+result_static_imputer_pl = static_imputer_pl(data_pl, coalitions_pl)
+print(f"STATIC mode (Polars): {result_static_imputer_pl}")
