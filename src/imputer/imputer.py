@@ -8,19 +8,40 @@ class Imputer(ABC):
         self.model = model
 
     @ld.lazydispatch
-    def expand_coalitions(coalitions: object, feature_group: object):
+    def expand_coalitions(data: object, coalitions: object, feature_group: object):
         return None
     
     @expand_coalitions.register(np.ndarray)
-    def expand_coalitions_np(coalitions: np.ndarray, feature_group: Union[dict[int, str], str]) -> np.ndarray:
+    def expand_coalitions_np(data: np.ndarray, coalitions: np.ndarray, feature_group: Union[dict[int, str], str]) -> np.ndarray:
         if isinstance(feature_group, str):
-            raise NotImplementedError("String-based feature groups are not implemented yet.")
+            # Parse grid dimensions from string (e.g., "3x3" or "3x3x3")
+            grid_dims = tuple(map(int, feature_group.lower().split('x')))
+            num_dims = len(grid_dims)
+
+            if len(data.shape) == 2:
+                num_features = data.shape[1]
+                feature_dim_per_axis = int(num_features ** (1.0 / num_dims))
+                feature_dims = tuple([feature_dim_per_axis] * num_dims)
+            else:
+                feature_dims = data.shape[1:1+num_dims]
+                        
+            expand_factors = tuple(feature_dims[i] // grid_dims[i] for i in range(num_dims))
+            
+            expanded_coalitions = []
+            for coalition in coalitions:
+                # Reshape coalition to grid and expand each dimension
+                expanded = coalition.reshape(grid_dims)
+                for axis, factor in enumerate(expand_factors):
+                    expanded = np.repeat(expanded, factor, axis=axis)
+                expanded_coalitions.append(expanded.flatten())
+            
+            return np.array(expanded_coalitions)
         else:
             raise NotImplementedError("Dict-based feature groups are not implemented yet.")
 
     def __call__(self, data, coalitions, feature_group: Optional[Union[dict[int, str], str]] = None):
         if feature_group:
-            coalitions_processed = self.expand_coalitions(coalitions, feature_group=feature_group)
+            coalitions_processed = self.expand_coalitions(data, coalitions, feature_group=feature_group)
         else:
             coalitions_processed = coalitions
         imputation_generator = self.impute(data, coalitions_processed)

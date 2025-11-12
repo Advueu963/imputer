@@ -26,7 +26,7 @@ reference_matrix = np.array([
     [30.0, 9.0, 5.0, 9.0],
     [40.0, 6.0, 5.0, 12.0]
 ])
-coalitions = np.array([[0, 1, 0, 1], [1,0,1,0]])
+coalitions = np.array([[0, 1, 0, 1], [1, 0, 1, 0]])
 
 # Create imputer
 static_imputer = BaselineImputer(
