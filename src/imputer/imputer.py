@@ -1,8 +1,8 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
-class Imputer():
-    def __init__(self, model) -> None:
-        self.model = model
+class Imputer(ABC):
+    def __init__(self) -> None:
+        pass
 
     def __call__(self, data, coalitions, model=None):
         imputed_data = self.impute(data, coalitions)
