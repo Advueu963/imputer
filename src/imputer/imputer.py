@@ -1,12 +1,25 @@
 from abc import ABC, abstractmethod
-from typing import Generator
+from typing import Generator, Optional, Union
 
 class Imputer(ABC):
-    def __init__(self, model=None) -> None:
+    def __init__(self, model=None, feature_group:  Optional[Union[dict[int, str], str]] = None) -> None:
         self.model = model
+        self.feature_group = feature_group
+
+    def expand_coalitions(self, coalitions):
+        if self.feature_group is None:
+            return coalitions
+        
+        if isinstance(self.feature_group, str):
+            raise NotImplementedError("String-based feature groups are not implemented yet.")
+        else:
+            raise NotImplementedError("Dict-based feature groups are not implemented yet.")
+            
+        return coalitions
 
     def __call__(self, data, coalitions):
-        imputation_generator = self.impute(data, coalitions)
+        coalitions_processed = self.expand_coalitions(coalitions)
+        imputation_generator = self.impute(data, coalitions_processed)
         outputs = []
         for i, imputed_data in enumerate(imputation_generator):
             print(f"[Imputer __call__]: Imputed data for coalition {i}: {imputed_data}")
