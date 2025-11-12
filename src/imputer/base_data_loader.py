@@ -5,4 +5,4 @@ def base_data_loader(data, imputation):
         yield imputation(datapoint)
 
 def get_base_data_loader(data, coalitions, reference, imputation):
-    return base_data_loader(data, (lambda a: imputation(a, coalitions, reference)))
+    return base_data_loader(data, (lambda a: imputation(a, reference, coalitions)))
