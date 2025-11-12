@@ -1,17 +1,17 @@
 from abc import abstractmethod
 
 class Imputer():
-    def __init__(self) -> None:
-        pass
+    def __init__(self, model) -> None:
+        self.model = model
 
-    def __call__(self, coalitions, model=None):
-        imputed_data = self.impute(coalitions)
+    def __call__(self, data, coalitions, model=None):
+        imputed_data = self.impute(data, coalitions)
         predictions = self.predict(imputed_data, model=model)
         outputs = self.postprocess(predictions)
         return outputs
 
     @abstractmethod
-    def impute(self, coalitions):
+    def impute(self, data, coalitions):
         raise NotImplementedError("Subclasses must implement this method")
 
     def predict(self, imputed_data, model):
