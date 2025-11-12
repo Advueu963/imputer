@@ -119,14 +119,24 @@ def example_jax():
     imputed = baseline_imputer.impute(S)
     print(f"   Imputed data:\n{imputed}")
     
-    # JAX can JIT compile the imputation for speed
-    from jax import jit
-    from imputer.core.implementations import baseline_impute
-    
     print("\n   JIT-compiled version:")
-    baseline_impute_jit = jit(baseline_impute)
+    
+    # way1: manual JIT
+    @jax.jit
+    def baseline_impute_jit(x, ref, S):
+        n_coalitions = S.shape[0]
+        x_bc = jnp.tile(x, (n_coalitions, 1))
+        ref_bc = jnp.tile(ref, (n_coalitions, 1))
+        return S * x_bc + (1 - S) * ref_bc
+    
+    # first run to compile
     imputed_jit = baseline_impute_jit(x, reference, S_matrix)
-    print(f"   Imputed data:\n{imputed_jit}")
+    print(f"   Result (JIT): {imputed_jit}")
+    
+    # way2: use imputer  JIT 
+    print("\n   Using Imputer (automatically uses JAX backend):")
+    result = baseline_imputer.impute(S)
+    print(f"   Result: {result}")
 
 
 def example_with_model():
@@ -179,7 +189,7 @@ def main():
     
     example_numpy()
     example_pytorch()
-    # example_jax()
+    example_jax()
     example_with_model()
     
     print("\n" + "=" * 60)
