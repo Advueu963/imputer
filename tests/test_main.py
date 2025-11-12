@@ -74,21 +74,21 @@ def test_main():
 
 def test_impute_1d_jax():
 
-    import jax as jnp 
+    import jax.numpy as jnp 
 
-    p = jnp.Array(point_np)
-    r = jnp.Array(reference)
-    c = jnp.Array(colations, dtype= bool)
+    p = jnp.array(point_np)
+    r = jnp.array(reference)
+    c = jnp.array(colations, dtype= bool)
 
     run_impute_test(p,r,c, point_np, reference,ref_1d_dataset, colations)
 
 def test_impute_2d_jax():
 
-    import jax as jnp 
+    import jax.numpy as jnp 
 
-    p = jnp.Array(point_np_2d)
-    r = jnp.Array(reference_2d)
-    c = jnp.Array(colations_2d)
+    p = jnp.array(point_np_2d)
+    r = jnp.array(reference_2d)
+    c = jnp.array(colations_2d)
 
     run_impute_test(p,r,c, point_np_2d, reference_2d,ref_2d_dataset, colations_2d)
 
