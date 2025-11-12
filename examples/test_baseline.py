@@ -11,36 +11,14 @@ class DummyModel:
 
     def predict(self, data):
         print(f"[{self.name} predict]: Predicting on data: {data}")
-        return f"PREDICTION_FROM_{self.name.upper()}"
+        return data
 
 
 # Setup
 default_model = DummyModel(name="DefaultModel")
 
-point = np.array([4.0, 5.0, 6.0, 7.0])
-reference = np.array([
-    [10.0, 1.0, 5.0, 3.0],
-    [20.0, 2.0, 5.0, 6.0],
-    [30.0, 9.0, 5.0, 9.0],
-    [40.0, 6.0, 5.0, 12.0]
-])
-coalition_mask = np.array([False, True, False, True])
-
-
-# # Test with NumPy
-# imp = mean_imputer.impute(data=point, coalitions=coalition_mask)
-# print(f"Imputer output: {imp}")
-# result_1 = mean_imputer(data=point, coalitions=coalition_mask)
-# print(f"NumPy result: {result_1}")
-
-# # Test with JAX
-# point_jax = jnp.array([1, 2, 3, 4])
-# coalition_mask_jax = jnp.array([False, True, False, True])
-# result_1b = mean_imputer(data=point_jax, coalitions=coalition_mask_jax)
-# print(f"JAX result: {result_1b}")
-
 # Test data
-data = np.array([4.0, 5.0, 6.0, 7.0])
+data = np.array([[4.0, 5.0, 6.0, 7.0]])
 reference = np.array([9.0, 8.0, 7.0, 6.0])
 reference_matrix = np.array([
     [10.0, 1.0, 5.0, 3.0],
@@ -73,21 +51,21 @@ print("coalitions (mask):\n", coalitions)
 
 # Test STATIC mode
 print("STATIC mode:")
-result_static = static_imputer.impute(data, coalitions)
+result_static = static_imputer(data, coalitions)
 print(f"Result: {result_static}\n")
 
 # Test MEAN mode with matrix
 print("MEAN mode (with reference_matrix):")
-result_mean = mean_imputer.impute(data, coalitions)
+result_mean = mean_imputer(data, coalitions)
 print(f"Result: {result_mean}\n")
 
 # Test MEDIAN mode with matrix
 print("MEDIAN mode (with reference_matrix):")
-result_median = median_imputer.impute(data, coalitions)
+result_median = median_imputer(data, coalitions)
 print(f"Result: {result_median}")
 
 import jax.numpy as jnp
-data_jax = jnp.array([4.0, 5.0, 6.0, 7.0])
+data_jax = jnp.array([[4.0, 5.0, 6.0, 7.0]])
 reference_jax = jnp.array([9.0, 8.0, 7.0, 6.0])
 reference_matrix_jax = jnp.array([
     [10.0, 1.0, 5.0, 3.0],
@@ -104,7 +82,7 @@ static_imputer_jax = BaselineImputer(
     model=default_model
 )
 
-print(static_imputer_jax.impute(data_jax, coalitions_jax))
+print(static_imputer_jax(data_jax, coalitions_jax))
 
 # Test Mean
 reference_matrix_jax = jnp.array([
@@ -120,7 +98,7 @@ mean_imputer_jax = BaselineImputer(
     model=default_model
 )
 
-print(mean_imputer_jax.impute(data_jax, coalitions_jax))
+print(mean_imputer_jax(data_jax, coalitions_jax))
 
 # Test Median
 median_imputer_jax = BaselineImputer(
@@ -128,18 +106,18 @@ median_imputer_jax = BaselineImputer(
     mode=ImputeMode.MEDIAN,
     model=default_model
 )
-print(median_imputer_jax.impute(data_jax, coalitions_jax))
+print(median_imputer_jax(data_jax, coalitions_jax))
 
-import polars as pl
-data_pl = pl.DataFrame(np.array([[4,5,6,7]]))
-reference_pl = pl.DataFrame(np.array([[9,8,7,6]]))
-coalitions_pl = pl.DataFrame(np.array([[0,1,0,1]]))
+# import polars as pl
+# data_pl = pl.DataFrame(np.array([[4,5,6,7]]))
+# reference_pl = pl.DataFrame(np.array([[9,8,7,6]]))
+# coalitions_pl = pl.DataFrame(np.array([[0,1,0,1]]))
 
-static_imputer_pl = BaselineImputer(
-    reference_data=reference_pl,
-    mode=ImputeMode.STATIC,
-    model=default_model
-)
+# static_imputer_pl = BaselineImputer(
+#     reference_data=reference_pl,
+#     mode=ImputeMode.STATIC,
+#     model=default_model
+# )
 
-print(type(data_pl))
-print(static_imputer_pl.impute(data_pl, coalitions_pl))
+# print(type(data_pl))
+# print(static_imputer_pl(data_pl, coalitions_pl))

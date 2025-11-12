@@ -1,17 +1,21 @@
 from abc import ABC, abstractmethod
+from typing import Generator
 
 class Imputer(ABC):
     def __init__(self, model=None) -> None:
         self.model = model
 
     def __call__(self, data, coalitions):
-        imputed_data = self.impute(data, coalitions)
-        predictions = self.predict(imputed_data)
-        outputs = self.postprocess(predictions)
+        imputation_generator = self.impute(data, coalitions)
+        outputs = []
+        for i, imputed_data in enumerate(imputation_generator):
+            print(f"[Imputer __call__]: Imputed data for coalition {i}: {imputed_data}")
+            predictions = self.predict(imputed_data)
+            outputs.append(self.postprocess(predictions))
         return outputs
 
     @abstractmethod
-    def impute(self, data, coalitions):
+    def impute(self, data, coalitions) -> Generator:
         raise NotImplementedError("Subclasses must implement this method")
 
     def predict(self, imputed_data):
