@@ -43,7 +43,7 @@ def run_impute_test(p, r, c, point, ref, ref_data, col):
     #static
 
     imputer_static = BaselineImputer(reference_data=ref_np, mode=ImputeMode.STATIC)
-    out_static = imputer_static.impute(np.asarray(p), np.asarray(c))
+    out_static = imputer_static.impute(p, c)
     expected_static = point_np.copy()
     expected_static[mask_np] = ref_np[mask_np]
     assert np.allclose(np.asarray(out_static), expected_static, rtol=0, atol=0)
@@ -51,7 +51,7 @@ def run_impute_test(p, r, c, point, ref, ref_data, col):
     #mean
 
     imputer_mean = BaselineImputer(reference_data=ref_data_np, mode=ImputeMode.MEAN)
-    out_mean = imputer_mean.impute(np.asarray(p), np.asarray(c))
+    out_mean = imputer_mean.impute(p, c)
     mean_vec = np.mean(ref_data_np, axis=-1)
     expected_mean = point_np.copy()
     expected_mean[mask_np] = mean_vec[mask_np]
@@ -59,7 +59,7 @@ def run_impute_test(p, r, c, point, ref, ref_data, col):
 
     #median
     imputer_med = BaselineImputer(reference_data=ref_data_np, mode=ImputeMode.MEDIAN)
-    out_med = imputer_med.impute(np.asarray(p), np.asarray(c))
+    out_med = imputer_med.imputeimpute(p, c)
     median_vec = np.median(ref_data_np, axis=-1)
     expected_med = point_np.copy()
     expected_med[mask_np] = median_vec[mask_np]
