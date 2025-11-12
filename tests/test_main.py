@@ -1,6 +1,6 @@
 """A simple test to ensure the test framework is working."""
 import pytest 
-from baseline_imputer import BaselineImputer, ImputeMode
+from imputer.baseline_imputer import BaselineImputer, ImputeMode
 import numpy as np
 
 
@@ -31,35 +31,6 @@ reference_img = rng.rand(h,w,channels).astype(np.float32)
 img_dataset = rng.rand(h,w,channels, 50).astype(np.float32)
 colations_img = np.zeros((h,w), dtype=bool)
 colations_img[::2, ::2] = True
-
-
-def run_impute_test(imputer_obj, point, col, expected_from_dataset = None):
-
-    out = imputer_obj.impute(point, col)
-    out_np = np.asarray(out)
-
-    expected = point.copy()
-    mode = imputer_obj.mode
-
-    if mode == ImputeMode.STATIC:
-        ref_np = np.asarray(imputer_obj.reference_data)
-        expected[col] = ref_np[col]
-    
-    elif mode == ImputeMode.MEDIAN:
-        if expected_from_dataset is not None:
-            expected[col] = expected_from_dataset[col]
-        else:
-            expected[col] = np.median(np.asarray(imputer_obj.reference_data), axis=-1)[col]  
-
-    elif mode == ImputeMode.MEAN:
-        
-        if expected_from_dataset is not None:
-            expected[col] = expected_from_dataset[col]
-        else:
-            expected[col] = np.mean(np.asarray(imputer_obj.reference_data), axis=-1)[col]  
-
-
-    assert np.allclose(out_np, expected, rtol=0, atol=0) 
 
 
 def run_impute_test(p, r, c, point, ref, ref_data, col):
@@ -96,10 +67,6 @@ def run_impute_test(p, r, c, point, ref, ref_data, col):
 
     return True, True, True
      
-            
-
-    
-
 
 def test_main():
     assert True
@@ -109,9 +76,9 @@ def test_impute_1d_jax():
 
     import jax as jnp 
 
-    p = jnp.array(point_np)
-    r = jnp.array(reference)
-    c = jnp.array(colations, dtype= bool)
+    p = jnp.Array(point_np)
+    r = jnp.Array(reference)
+    c = jnp.Array(colations, dtype= bool)
 
     run_impute_test(p,r,c, point_np, reference,ref_1d_dataset, colations)
 
@@ -119,9 +86,9 @@ def test_impute_2d_jax():
 
     import jax as jnp 
 
-    p = jnp.array(point_np_2d)
-    r = jnp.array(reference_2d)
-    c = jnp.array(colations_2d)
+    p = jnp.Array(point_np_2d)
+    r = jnp.Array(reference_2d)
+    c = jnp.Array(colations_2d)
 
     run_impute_test(p,r,c, point_np_2d, reference_2d,ref_2d_dataset, colations_2d)
 
