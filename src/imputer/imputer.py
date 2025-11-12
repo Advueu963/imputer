@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Generator, Optional, Union
 
+import lazy_dispatch as ld
+
 class Imputer(ABC):
     def __init__(self, model=None, feature_group:  Optional[Union[dict[int, str], str]] = None) -> None:
         self.model = model
@@ -33,10 +35,26 @@ class Imputer(ABC):
 
     def predict(self, imputed_data):
         if self.model:
-            outputs_pred = self.model.predict(imputed_data) # TODO: adapt to model interface
+            outputs_pred = self.predict_model(self.model, imputed_data)# TODO: adapt to model interface
             return outputs_pred
         else:
             raise ValueError("Model must be provided for prediction")
 
     def postprocess(self, predictions):
         return predictions #TODO: placeholder for postprocessing
+    
+    @ld.lazydispatch
+    def predict_model(model: object, data: object):
+        return None
+
+    @predict_model.register("sklearn.base.BaseEstimator")
+    def predict_sklearn_model(model: "sklearn.base.BaseEstimator", data: object):
+        return model.predict(data)
+    
+    @predict_model.register("torch.nn.Module")
+    def predict_torch_model(model: "torch.nn.Module", data: object):
+        return model(data)
+    
+    @predict_model.register("flax.nnx.Module")
+    def predict_flax_model(model: "flax.nnx.Module", data: object):
+        return model(data)
