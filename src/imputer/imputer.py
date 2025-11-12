@@ -53,7 +53,7 @@ class Imputer(ABC):
         return outputs
 
     @abstractmethod
-    def impute(self, data, coalitions) -> Generator:
+    def impute(self, data, coalitions):
         raise NotImplementedError("Subclasses must implement this method")
 
     def predict(self, imputed_data):
@@ -76,6 +76,9 @@ class Imputer(ABC):
     
     @predict_model.register("torch.nn.Module")
     def predict_torch_model(model: "torch.nn.Module", data: object):
+        import torch
+        if not isinstance(data, torch.Tensor):
+            data = torch.Tensor(data)
         return model(data)
     
     @predict_model.register("flax.nnx.Module")
