@@ -4,26 +4,23 @@ from enum import Enum
 from typing import Optional
 from imputer.imputer import Imputer
 
-class MarginalMode(Enum):
+class ImputeMode(Enum):
     JOINT = "joint"
     INDEPENDENT = "independent"
 
 class MarginalImputer(Imputer):
-    def __init__(self, reference_data, mode=MarginalMode.JOINT, sample_size=100, random_state=None, model=None) -> None:
+    def __init__(self, reference_data, mode=ImputeMode.JOINT, sample_size=100, random_state=None, model=None) -> None:
         super().__init__(model=model)
         self.reference_data = reference_data
         self.mode = mode
         self.sample_size = sample_size
         self.random_state = random_state
 
-    def impute(self, data: object, coalitions: object, sample_size: Optional[int] = None, random_state: Optional[int] = None) -> object:
-        sample_size = sample_size or self.sample_size
-        random_state = random_state if random_state is not None else self.random_state
-        
-        if self.mode == MarginalMode.JOINT:
-            return self.impute_joint(data, self.reference_data, coalitions, sample_size, random_state)
-        elif self.mode == MarginalMode.INDEPENDENT:
-            return self.impute_independent(data, self.reference_data, coalitions, sample_size, random_state)
+    def impute(self, data: object, coalitions: object) -> object:       
+        if self.mode == ImputeMode.JOINT:
+            return self.impute_joint(data, self.reference_data, coalitions, self.sample_size, self.random_state)
+        elif self.mode == ImputeMode.INDEPENDENT:
+            return self.impute_independent(data, self.reference_data, coalitions, self.sample_size, self.random_state)
         else:
             raise NotImplementedError(f"Imputation mode {self.mode} not implemented.")
 
@@ -151,22 +148,3 @@ class MarginalImputer(Imputer):
             imputed_samples.append(imputed)
         
         return jnp.mean(jnp.stack(imputed_samples), axis=0)
-
-
-if __name__ == "__main__":
-    point = np.array([4.0, 5.0, 6.0, 7.0])
-    reference_matrix = np.array([
-        [10.0, 1.0, 5.0, 3.0],
-        [20.0, 2.0, 5.0, 6.0],
-        [30.0, 9.0, 5.0, 9.0],
-        [40.0, 6.0, 5.0, 12.0]
-    ])
-    coalitions = np.array([[0, 1, 0, 1], [1, 0, 1, 0]])
-    
-    imputer_joint = MarginalImputer(reference_matrix, mode=MarginalMode.JOINT, sample_size=10, random_state=42)
-    result_joint = imputer_joint.impute(point, coalitions)
-    
-    imputer_indep = MarginalImputer(reference_matrix, mode=MarginalMode.INDEPENDENT, sample_size=10, random_state=42)
-    result_indep = imputer_indep.impute(point, coalitions)
-    print("Joint Imputation Result:\n", result_joint)
-    print("Independent Imputation Result:\n", result_indep)
