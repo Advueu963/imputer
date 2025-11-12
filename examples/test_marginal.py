@@ -1,7 +1,7 @@
 import numpy as np
 from imputer.marginal_imputer import MarginalImputer, ImputeMode
 
-point = np.array([4.0, 5.0, 6.0, 7.0])
+point = np.array([[4.0, 5.0, 6.0, 7.0]])
 reference_matrix = np.array([
     [10.0, 1.0, 5.0, 3.0],
     [20.0, 2.0, 5.0, 6.0],

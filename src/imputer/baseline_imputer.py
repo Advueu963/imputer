@@ -55,7 +55,6 @@ class BaselineImputer(Imputer):
             results[coalition_idx] = imputed
         return results if num_coalitions > 1 else results[0]
 
-
     @impute_mean.register(np.ndarray)
     def impute_mean_np(data: np.ndarray, reference_data: np.ndarray, coalitions: np.ndarray) -> np.ndarray:
         if coalitions.ndim == 1:
@@ -73,7 +72,6 @@ class BaselineImputer(Imputer):
             results[coalition_idx] = imputed
         
         return results if num_coalitions > 1 else results[0]
-
 
     @impute_median.register(np.ndarray)
     def impute_median_np(data: np.ndarray, reference_data: np.ndarray, coalitions: np.ndarray) -> np.ndarray:

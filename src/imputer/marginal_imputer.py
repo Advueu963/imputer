@@ -16,13 +16,14 @@ class MarginalImputer(Imputer):
         self.sample_size = sample_size
         self.random_state = random_state
 
-    def impute(self, data: object, coalitions: object) -> object:       
-        if self.mode == ImputeMode.JOINT:
-            return self.impute_joint(data, self.reference_data, coalitions, self.sample_size, self.random_state)
-        elif self.mode == ImputeMode.INDEPENDENT:
-            return self.impute_independent(data, self.reference_data, coalitions, self.sample_size, self.random_state)
-        else:
-            raise NotImplementedError(f"Imputation mode {self.mode} not implemented.")
+    def impute(self, data: object, coalitions: object) -> object:
+        for data_point in data:
+            if self.mode == ImputeMode.JOINT:
+                yield self.impute_joint(data_point, self.reference_data, coalitions, self.sample_size, self.random_state)
+            elif self.mode == ImputeMode.INDEPENDENT:
+                yield self.impute_independent(data_point, self.reference_data, coalitions, self.sample_size, self.random_state)
+            else:
+                raise NotImplementedError(f"Imputation mode {self.mode} not implemented.")
 
     @ld.lazydispatch
     def impute_joint(data: object, reference_data: object, coalitions: object, 

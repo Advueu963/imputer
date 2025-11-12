@@ -108,16 +108,16 @@ median_imputer_jax = BaselineImputer(
 )
 print(median_imputer_jax(data_jax, coalitions_jax))
 
-# import polars as pl
-# data_pl = pl.DataFrame(np.array([[4,5,6,7]]))
-# reference_pl = pl.DataFrame(np.array([[9,8,7,6]]))
-# coalitions_pl = pl.DataFrame(np.array([[0,1,0,1]]))
+import polars as pl
+data_pl = [pl.DataFrame(np.array([[4,5,6,7]]))]
+reference_pl = pl.DataFrame(np.array([[9,8,7,6]]))
+coalitions_pl = pl.DataFrame(np.array([[0,1,0,1]]))
 
-# static_imputer_pl = BaselineImputer(
-#     reference_data=reference_pl,
-#     mode=ImputeMode.STATIC,
-#     model=default_model
-# )
+static_imputer_pl = BaselineImputer(
+    reference_data=reference_pl,
+    mode=ImputeMode.STATIC,
+    model=default_model
+)
 
-# print(type(data_pl))
-# print(static_imputer_pl(data_pl, coalitions_pl))
+print(type(data_pl))
+print(static_imputer_pl(data_pl, coalitions_pl))
