@@ -93,6 +93,9 @@ class Imputer(ABC):
                         elif isinstance(idx, list):
                             expanded_coalitions[tuple(idx)] = coalition_values
 
+        if np.any(expanded_coalitions == None):
+            none_positions = np.argwhere(expanded_coalitions == None)
+            raise ValueError(f"Expanded coalitions contain None values at positions: {none_positions.tolist()}, the feature_group mapping was incomplete.")
                     
         return coalitions
 
