@@ -8,7 +8,7 @@ reference_matrix = np.array([
     [30.0, 9.0, 5.0, 9.0],
     [40.0, 6.0, 5.0, 12.0]
 ])
-coalitions = np.array([[0, 1, 0, 1], [1, 0, 1, 0]])
+coalitions = np.array([[False, True, False, True], [True, False, True, False]])
 
 imputer_joint = MarginalImputer(reference_matrix, mode=ImputeMode.JOINT, sample_size=10, random_state=42)
 result_joint = imputer_joint.impute(point, coalitions)

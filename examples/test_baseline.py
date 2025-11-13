@@ -26,7 +26,7 @@ reference_matrix = np.array([
     [30.0, 9.0, 5.0, 9.0],
     [40.0, 6.0, 5.0, 12.0]
 ])
-coalitions = np.array([[0, 1, 0, 1], [1, 0, 1, 0]])
+coalitions = np.array([[False, True, False, True], [True, False, True, False]])
 
 # Create imputer
 static_imputer = BaselineImputer(
@@ -73,7 +73,7 @@ reference_matrix_jax = jnp.array([
     [30.0, 9.0, 5.0, 9.0],
     [40.0, 6.0, 5.0, 12.0]
 ])
-coalitions_jax = jnp.array([0, 1, 0, 1])
+coalitions_jax = jnp.array([False, True, False, True])
 
 static_imputer_jax = BaselineImputer(
     reference_data=reference_jax,
@@ -114,7 +114,7 @@ print(f"MEDIAN mode (JAX): {result_median_imputer_jax}")
 import polars as pl
 data_pl = [pl.DataFrame(np.array([[4,5,6,7]]))]
 reference_pl = pl.DataFrame(np.array([[9,8,7,6]]))
-coalitions_pl = pl.DataFrame(np.array([[0,1,0,1]]))
+coalitions_pl = pl.DataFrame(np.array([[False,True,False,True]]))
 
 static_imputer_pl = BaselineImputer(
     reference_data=reference_pl,

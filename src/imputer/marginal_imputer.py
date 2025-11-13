@@ -19,9 +19,9 @@ class MarginalImputer(Imputer):
     def impute(self, data: object, coalitions: object) -> object:
         for data_point in data:
             if self.mode == ImputeMode.JOINT:
-                yield self.impute_joint(data_point, self.reference_data, coalitions, self.sample_size, self.random_state)
+                return self.impute_joint(data_point, self.reference_data, coalitions, self.sample_size, self.random_state)
             elif self.mode == ImputeMode.INDEPENDENT:
-                yield self.impute_independent(data_point, self.reference_data, coalitions, self.sample_size, self.random_state)
+                return self.impute_independent(data_point, self.reference_data, coalitions, self.sample_size, self.random_state)
             else:
                 raise NotImplementedError(f"Imputation mode {self.mode} not implemented.")
 
