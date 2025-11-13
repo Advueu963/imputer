@@ -13,7 +13,6 @@ class DummyModel:
         print(f"[{self.name} predict]: Predicting on data: {data}")
         return data
 
-
 # Setup
 default_model = DummyModel(name="DefaultModel")
 
@@ -50,6 +49,7 @@ print("reference_data:", reference)
 print("coalitions (mask):\n", coalitions)
 
 # Test STATIC mode
+print("NP Arrays")
 print("STATIC mode:")
 result_static = static_imputer(data, coalitions)
 print(f"Result: {result_static}\n")
@@ -62,7 +62,7 @@ print(f"Result: {result_mean}\n")
 # Test MEDIAN mode with matrix
 print("MEDIAN mode (with reference_matrix):")
 result_median = median_imputer(data, coalitions)
-print(f"Result: {result_median}")
+print(f"Result: {result_median}\n\n")
 
 import jax.numpy as jnp
 data_jax = jnp.array([[4.0, 5.0, 6.0, 7.0]])
@@ -82,6 +82,7 @@ static_imputer_jax = BaselineImputer(
 )
 
 result_static_imputer_jax = static_imputer_jax(data_jax, coalitions_jax)
+print("JAX Arrays")
 print(f"STATIC mode (JAX): {result_static_imputer_jax}")
 
 # Test Mean
@@ -109,7 +110,7 @@ median_imputer_jax = BaselineImputer(
 )
 
 result_median_imputer_jax = median_imputer_jax(data_jax, coalitions_jax)
-print(f"MEDIAN mode (JAX): {result_median_imputer_jax}")
+print(f"MEDIAN mode (JAX): {result_median_imputer_jax}\n\n")
 
 import polars as pl
 data_pl = [pl.DataFrame(np.array([[4,5,6,7]]))]
@@ -121,6 +122,21 @@ static_imputer_pl = BaselineImputer(
     mode=ImputeMode.STATIC,
     model=default_model
 )
+mean_imputer_pl = BaselineImputer(
+    reference_data=reference_pl,
+    mode=ImputeMode.MEAN,
+    model=default_model
+)
+median_imputer_pl = BaselineImputer(
+    reference_data=reference_pl,
+    mode=ImputeMode.MEDIAN,
+    model=default_model
+)
 
 result_static_imputer_pl = static_imputer_pl(data_pl, coalitions_pl)
+result_mean_imputer_pl = mean_imputer_pl(data_pl, coalitions_pl)
+result_median_imputer_pl = median_imputer_pl(data_pl, coalitions_pl)
+print("Polars DataFrames")
 print(f"STATIC mode (Polars): {result_static_imputer_pl}")
+print(f"MEAN mode (Polars): {result_mean_imputer_pl}")
+print(f"MEDIAN mode (Polars): {result_median_imputer_pl}")
