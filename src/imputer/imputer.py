@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Generator, Optional, Union
 import numpy as np
 import re
+import lazy_dispatch as ld
 
 class Imputer(ABC):
     def __init__(self, model=None, feature_group: Optional[Union[dict[int, str], str]] = None) -> None:
