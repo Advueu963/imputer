@@ -36,60 +36,63 @@ class BaselineImputer(Imputer):
     def impute_median(data: object, reference_data: object, coalitions: object) -> object:
         return None
 
-
     # Implementation for numpy arrays
+
     @impute_static.register(np.ndarray)
     def impute_static_np(data: np.ndarray, reference_data: np.ndarray, coalitions: np.ndarray) -> np.ndarray:
-        if coalitions.ndim == 1:
-            coalitions = coalitions.reshape(1, -1)
+        if coalitions.shape == data.shape:
+            coalitions = np.expand_dims(coalitions, axis=0)
         
         num_coalitions = coalitions.shape[0]
-        results = np.zeros((num_coalitions, data.shape[0]))
+        results = np.zeros((num_coalitions, *data.shape), dtype=data.dtype)
         
         for coalition_idx in range(num_coalitions):
             imputed = data.copy()
-            for i in range(data.shape[0]):
-                if coalitions[coalition_idx, i]:
-                    imputed[i] = reference_data[i]
+            imputed[coalitions[coalition_idx]] = reference_data[coalitions[coalition_idx]]
             results[coalition_idx] = imputed
+        
         return results if num_coalitions > 1 else results[0]
+
 
     @impute_mean.register(np.ndarray)
     def impute_mean_np(data: np.ndarray, reference_data: np.ndarray, coalitions: np.ndarray) -> np.ndarray:
-        if coalitions.ndim == 1:
-            coalitions = coalitions.reshape(1, -1)
+        if coalitions.shape == data.shape:
+            coalitions = np.expand_dims(coalitions, axis=0)
         
         num_coalitions = coalitions.shape[0]
-        results = np.zeros((num_coalitions, data.shape[0]))
-        mean_value = np.mean(reference_data, axis=1)
+        results = np.zeros((num_coalitions, *data.shape), dtype=data.dtype)
+        
+        if reference_data.ndim > data.ndim:
+            mean_value = np.mean(reference_data, axis=0)
+        else:
+            mean_value = reference_data
         
         for coalition_idx in range(num_coalitions):
             imputed = data.copy()
-            for i in range(data.shape[0]):
-                if coalitions[coalition_idx, i]:
-                    imputed[i] = mean_value[i]
+            imputed[coalitions[coalition_idx]] = mean_value[coalitions[coalition_idx]]
             results[coalition_idx] = imputed
         
         return results if num_coalitions > 1 else results[0]
 
     @impute_median.register(np.ndarray)
     def impute_median_np(data: np.ndarray, reference_data: np.ndarray, coalitions: np.ndarray) -> np.ndarray:
-        if coalitions.ndim == 1:
-            coalitions = coalitions.reshape(1, -1)
+        if coalitions.shape == data.shape:
+            coalitions = np.expand_dims(coalitions, axis=0)
         
         num_coalitions = coalitions.shape[0]
-        results = np.zeros((num_coalitions, data.shape[0]))
-        median_value = np.median(reference_data, axis=1)
+        results = np.zeros((num_coalitions, *data.shape), dtype=data.dtype)
+        
+        if reference_data.ndim > data.ndim:
+            median_value = np.median(reference_data, axis=0)
+        else:
+            median_value = reference_data
         
         for coalition_idx in range(num_coalitions):
             imputed = data.copy()
-            for i in range(data.shape[0]):
-                if coalitions[coalition_idx, i]:
-                    imputed[i] = median_value[i]
+            imputed[coalitions[coalition_idx]] = median_value[coalitions[coalition_idx]]
             results[coalition_idx] = imputed
         
         return results if num_coalitions > 1 else results[0]
-
 
     # Implementation for JAX arrays
     @impute_static.register("jax.Array")
