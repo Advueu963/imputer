@@ -61,8 +61,8 @@ class Imputer(ABC):
                 for i, part in enumerate(parts):
                     if part != ':':
                         continue
-                    prev_part = parts.pop(i - 1) if i > 0 else None
-                    next_part = parts.pop(i + 1) if i + 1 < len(parts) else None
+                    prev_part = parts[i - 1] if i > 0 else None
+                    next_part = parts[i + 1] if i + 1 < len(parts) else None
                     if prev_part is None or next_part is None or not (isinstance(prev_part, int) and isinstance(next_part, int)):
                         raise ValueError("Invalid feature group format around ':'.")
                     combined = [x for x in range(prev_part, next_part + 1)]
