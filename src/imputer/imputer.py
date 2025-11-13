@@ -4,9 +4,13 @@ import numpy as np
 import re
 import lazy_dispatch as ld
 
+from imputer.torch_data_loader import get_torch_dataloader
+from imputer.base_data_loader import base_data_loader
+
 class Imputer(ABC):
-    def __init__(self, model=None) -> None:
+    def __init__(self, model=None, backend="torch") -> None:
         self.model = model
+        self.backend = backend
 
     @ld.lazydispatch
     def expand_coalitions(data: object, coalitions: object, feature_group: object):
@@ -97,7 +101,11 @@ class Imputer(ABC):
             coalitions_processed = self.expand_coalitions(  data, coalitions, feature_group) # type: ignore
         else:
             coalitions_processed = coalitions
-        imputation_generator = self.impute(data, coalitions_processed)
+        imputation = (lambda a: self.impute(a, coalitions_processed))
+        if self.backend == "torch":
+            imputation_generator = get_torch_dataloader(data, imputation)
+        else:
+            imputation_generator = base_data_loader(data, imputation)
         outputs = []
         for i, imputed_data in enumerate(imputation_generator):
             print(f"[Imputer __call__]: Imputed data for coalition {i}: {imputed_data}")
@@ -111,7 +119,7 @@ class Imputer(ABC):
 
     def predict(self, imputed_data):
         if self.model:
-            outputs_pred = self.model.predict(imputed_data) # TODO: adapt to model interface
+            outputs_pred = self.predict_model(self.model, imputed_data) # TODO: adapt to model interface
             return outputs_pred
         else:
             raise ValueError("Model must be provided for prediction")
