@@ -15,15 +15,14 @@ class BaselineImputer(Imputer):
         self.mode = mode
 
     def impute(self, data: object, coalitions: object) -> object:
-        for data_point in data:
-            if self.mode == ImputeMode.STATIC:
-                yield self.impute_static(data_point, self.reference_data, coalitions)
-            elif self.mode == ImputeMode.MEAN:
-                yield self.impute_mean(data_point, self.reference_data, coalitions)
-            elif self.mode == ImputeMode.MEDIAN:
-                yield self.impute_median(data_point, self.reference_data, coalitions)
-            else:
-                raise NotImplementedError(f"Imputation mode {self.mode} not implemented.")
+        if self.mode == ImputeMode.STATIC:
+            return self.impute_static(data, self.reference_data, coalitions)
+        elif self.mode == ImputeMode.MEAN:
+            return self.impute_mean(data, self.reference_data, coalitions)
+        elif self.mode == ImputeMode.MEDIAN:
+            return self.impute_median(data, self.reference_data, coalitions)
+        else:
+            raise NotImplementedError(f"Imputation mode {self.mode} not implemented.")
 
     @ld.lazydispatch
     def impute_static(data: object, reference_data: object, coalitions: object) -> object:

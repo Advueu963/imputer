@@ -8,7 +8,7 @@ from imputer.torch_data_loader import get_torch_dataloader
 from imputer.base_data_loader import base_data_loader
 
 class Imputer(ABC):
-    def __init__(self, model=None, backend="torch") -> None:
+    def __init__(self, model=None, backend="") -> None:
         self.model = model
         self.backend = backend
 
