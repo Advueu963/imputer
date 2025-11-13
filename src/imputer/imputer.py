@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generator, Optional, Union
+from typing import Optional, Union
 import numpy as np
 import re
 import lazy_dispatch as ld
@@ -111,7 +111,6 @@ class Imputer(ABC):
             imputation_generator = base_data_loader(data, imputation)
         outputs = []
         for i, imputed_data in enumerate(imputation_generator):
-            print(f"[Imputer __call__]: Imputed data for coalition {i}: {imputed_data}")
             predictions = self.predict(imputed_data)
             outputs.append(self.postprocess(predictions))
         return outputs
@@ -122,7 +121,7 @@ class Imputer(ABC):
 
     def predict(self, imputed_data):
         if self.model:
-            outputs_pred = self.predict_model(self.model, imputed_data) # TODO: adapt to model interface
+            outputs_pred = self.predict_model(self.model, imputed_data)
             return outputs_pred
         else:
             raise ValueError("Model must be provided for prediction")
