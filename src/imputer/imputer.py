@@ -4,7 +4,7 @@ import numpy as np
 import re
 
 class Imputer(ABC):
-    def __init__(self, model=None, feature_group: Optional[Union[dict[int, str], str]] = None) -> None:
+    def __init__(self, model=None) -> None:
         self.model = model
 
     @ld.lazydispatch
@@ -37,7 +37,9 @@ class Imputer(ABC):
             
             return np.array(expanded_coalitions)
         else:
-            for k, v in self.feature_group.items():
+            expanded_coalitions = np.full(data.shape, None, dtype=object)
+        
+            for k, v in feature_group.items():
                 index = k
                 if isinstance(index, int):
                     index = [index]
@@ -81,12 +83,19 @@ class Imputer(ABC):
                     if part == ',':
                         continue
                     for idx in part:
-                        expanded_coalitions.insert(idx, coalition_values)
+                        if isinstance(idx, int):
+                            expanded_coalitions[idx] = coalition_values
+                        elif isinstance(idx, list):
+                            expanded_coalitions[tuple(idx)] = coalition_values
+
                     
         return coalitions
 
-    def __call__(self, data, coalitions):
-        coalitions_processed = self.expand_coalitions(coalitions)
+    def __call__(self, data, coalitions, feature_group: Optional[Union[dict[int, str], str]] = None):
+        if feature_group is not None:
+            coalitions_processed = self.expand_coalitions(  data, coalitions, feature_group) # type: ignore
+        else:
+            coalitions_processed = coalitions
         imputation_generator = self.impute(data, coalitions_processed)
         outputs = []
         for i, imputed_data in enumerate(imputation_generator):
