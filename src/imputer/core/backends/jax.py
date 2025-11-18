@@ -23,7 +23,7 @@ def baseline_impute_jax(
     Args:
         x: Data point to explain, shape (n_features,)
         reference: Reference values, shape (n_features,)
-        coalition_matrix: Binary coalition matrix, shape (n_coalitions, n_features)
+        coalition_matrix: Boolean coalition matrix (dtype=jnp.bool_), shape (n_coalitions, n_features)
     
     Returns:
         Imputed data, shape (n_coalitions, n_features)
@@ -60,8 +60,11 @@ def baseline_impute_jax(
     x_broadcast = jnp.tile(x, (n_coalitions, 1))
     reference_broadcast = jnp.tile(reference, (n_coalitions, 1))
     
-    # Apply coalition matrix: S=1 keeps x, S=0 uses reference
-    imputed = coalition_matrix * x_broadcast + (1 - coalition_matrix) * reference_broadcast
+    # make sure that coalition_matrix is boolean
+    if coalition_matrix.dtype != jnp.bool_:
+        coalition_matrix = coalition_matrix.astype(jnp.bool_)
+
+    imputed = jnp.where(coalition_matrix, x_broadcast, reference_broadcast)    
     
     return imputed
 
@@ -78,7 +81,7 @@ def marginal_impute_jax(
     Args:
         x: Data point to explain, shape (n_features,)
         data: Background dataset, shape (n_background, n_features)
-        coalition_matrix: Binary coalition matrix, shape (n_coalitions, n_features)
+        coalition_matrix: Boolean coalition matrix (dtype=jnp.bool_), shape (n_coalitions, n_features)
         n_samples: Number of samples per coalition
         rng_key: JAX random key. If None, creates a new key with seed 0.
     
@@ -143,8 +146,7 @@ def marginal_impute_jax(
         # Broadcast coalition to (n_samples, n_features)
         coalition_broadcast = jnp.tile(coalition, (n_samples, 1))
         
-        # Apply coalition: S=1 keeps x, S=0 uses sampled data
-        return coalition_broadcast * x_broadcast + (1 - coalition_broadcast) * sampled_data
+        return jnp.where(coalition_broadcast, x_broadcast, sampled_data)
     
     # Split RNG key for each coalition
     keys = jax.random.split(rng_key, n_coalitions)
@@ -180,3 +182,69 @@ def compute_mean_jax(data: jax.Array, axis: int) -> jax.Array:
     import jax.numpy as jnp
     
     return jnp.mean(data, axis=axis)
+
+def compute_median_jax(data: jax.Array, axis: int) -> jax.Array:
+    """Compute median along axis for JAX arrays.
+    
+    Args:
+        data: Input array (n_samples, n_features)
+        axis: Axis along which to compute median
+    
+    Returns:
+        Median values
+    
+    Note:
+        JIT-compilable and differentiable.
+    
+    Example:
+        >>> import jax.numpy as jnp
+        >>> data = jax.random.normal(jax.random.PRNGKey(0), (100, 4))
+        >>> medians = compute_median_jax(data, axis=0)
+        >>> medians.shape
+        (4,)
+    """
+    import jax.numpy as jnp
+    
+    return jnp.median(data, axis=axis)
+
+
+def compute_mode_jax(data: jax.Array, axis: int) -> jax.Array:
+    """Compute mode along axis for JAX arrays.
+    
+    Args:
+        data: Input array (n_samples, n_features)
+        axis: Axis along which to compute mode
+    
+    Returns:
+        Mode values
+    
+    Note:
+        For continuous data, uses most frequent binned value.
+        Not as robust as scipy.stats.mode.
+    
+    Warning:
+        This is an approximation for JAX compatibility.
+        Consider rounding continuous data before calling.
+    
+    Example:
+        >>> import jax.numpy as jnp
+        >>> data = jax.random.randint(
+        ...     jax.random.PRNGKey(0), (100, 4), 0, 5
+        ... )
+        >>> modes = compute_mode_jax(data, axis=0)
+        >>> modes.shape
+        (4,)
+    """
+    import jax.numpy as jnp
+    from jax.scipy import stats as jax_stats
+    
+    # JAX doesn't have built-in mode, use workaround
+    # For each feature, find most common value
+    def mode_1d(x):
+        # Round to handle floating point
+        x_int = jnp.round(x).astype(jnp.int32)
+        values, counts = jnp.unique(x_int, return_counts=True)
+        return values[jnp.argmax(counts)].astype(x.dtype)
+    
+    # Apply along axis
+    return jnp.apply_along_axis(mode_1d, axis, data)
